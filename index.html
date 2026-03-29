@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="apple-touch-icon" href="image_39.png">
+    <link rel="icon" href="image_39.png">
+    <title>Focus Reader - Fridge Combo</title>
+    <style>
+        :root {
+            --bg: #f5f5f5;
+            --container-bg: #fff;
+            --main: #333;
+            --accent: #eee;
+            --input-bg: #fafafa;
+            --ghost: #ddd; /* 透過させる文字の色 */
+            --radius: 15px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            background-color: var(--container-bg);
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        header { text-align: center; margin-bottom: 5px; }
+        h1 { font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -0.5px; }
+        .description { font-size: 13px; opacity: 0.7; margin-top: 5px; line-height: 1.4; }
+
+        /* Language Switcher */
+        .switcher {
+            display: flex;
+            background: var(--accent);
+            padding: 4px;
+            border-radius: var(--radius);
+            gap: 4px;
+            margin-bottom: 5px;
+        }
+
+        .sw-btn {
+            flex: 1;
+            border: none;
+            background: none;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--main);
+        }
+
+        .sw-btn.active {
+            background: var(--container-bg);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* Input Area */
+        .input-header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: -10px;
+            z-index: 1;
+        }
+
+        .clr-btn {
+            font-size: 12px;
+            color: #aaa;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 5px 10px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 140px;
+            padding: 15px;
+            border: 2px solid var(--accent);
+            border-radius: var(--radius);
+            background-color: var(--input-bg);
+            font-size: 16px;
+            color: var(--main);
+            resize: none;
+            outline: none;
+            -webkit-appearance: none;
+            -webkit-text-fill-color: var(--main);
+            opacity: 1 !important;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 18px;
+            background-color: var(--main);
+            color: var(--container-bg);
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .action-btn:active { transform: scale(0.98); }
+
+        /* Output Area (Bone View) */
+        .output-box {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            background: var(--input-bg);
+            border: 1px dashed var(--accent);
+            border-radius: var(--radius);
+            font-size: 16px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            display: none;
+            margin-top: 5px;
+            word-break: break-all;
+        }
+
+        .output-box.show { display: block; }
+        
+        /* 骨と肉のスタイル */
+        .bone { color: var(--main); font-weight: 700; }
+        .flesh { color: var(--ghost); }
+
+        /* UI Parts */
+        .support-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-top: 25px;
+            border-top: 1px solid var(--accent);
+            padding-top: 20px;
+        }
+
+        .kofi-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--main);
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 22px;
+            border-radius: var(--radius);
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .add-home-link {
+            font-size: 12px;
+            color: var(--main);
+            text-decoration: underline;
+            cursor: pointer;
+            opacity: 0.8;
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 40px 0 20px;
+            text-align: center;
+            font-size: 11px;
+            line-height: 1.8;
+            opacity: 0.5;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--container-bg);
+            padding: 30px;
+            border-radius: var(--radius);
+            max-width: 340px;
+            width: 90%;
+            position: relative;
+        }
+
+        .modal-close-x {
+            position: absolute;
+            top: 15px; right: 15px;
+            color: #ccc; font-size: 22px; cursor: pointer;
+            padding: 5px;
+        }
+
+        .modal-title {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 20px; font-weight: bold; margin-bottom: 25px;
+        }
+
+        .modal-item { margin-bottom: 18px; font-size: 14px; line-height: 1.6; color: #555; }
+        .modal-item b { display: block; margin-bottom: 3px; color: var(--main); }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Focus Reader</h1>
+        <div id="desc" class="description">Highlight the "bones" of the text.</div>
+    </header>
+
+    <div class="switcher">
+        <button id="btn-en" class="sw-btn active" onclick="setLang('en')">English</button>
+        <button id="btn-jp" class="sw-btn" onclick="setLang('jp')">日本語</button>
+    </div>
+
+    <div class="input-header">
+        <div class="clr-btn" onclick="clearInput()">CLR</div>
+    </div>
+    <textarea id="input" placeholder="Paste long text here..."></textarea>
+    
+    <button class="action-btn" onclick="focusText()">FOCUS</button>
+
+    <div id="output" class="output-box"></div>
+
+    <div class="support-area">
+        <a href="https://ko-fi.com/afrorakda" class="kofi-btn">☕️ buy me a coffee</a>
+        <div class="add-home-link" onclick="showModal()">Add to Home Screen</div>
+    </div>
+</div>
+
+<footer>
+    No login / No tracking / No ads / Browser only<br>
+    Privacy Policy / afrorakda © 2026
+</footer>
+
+<div id="homeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-close-x" onclick="closeModal()">×</div>
+        <div class="modal-title"><span>📱</span> Install</div>
+        <div class="modal-item">
+            Add this tool to your home screen.
+        </div>
+        <div class="modal-item">
+            <b>🍏 iPhone (Safari):</b>
+            Tap Share, then Add to Home Screen.
+        </div>
+        <div class="modal-item">
+            <b>🤖 Android (Chrome):</b>
+            Tap Menu (⋮), then Add to Home Screen.
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentLang = 'en';
+
+    function setLang(lang) {
+        currentLang = lang;
+        document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+        document.getElementById('btn-jp').classList.toggle('active', lang === 'jp');
+        const input = document.getElementById('input');
+        const desc = document.getElementById('desc');
+        if(lang === 'jp') {
+            input.placeholder = "長い文章をここに貼り付けてください...";
+            desc.innerText = "文章の「骨組み」を浮き上がらせます。";
+        } else {
+            input.placeholder = "Paste long text here...";
+            desc.innerText = "Highlight the 'bones' of the text.";
+        }
+    }
+
+    function clearInput() {
+        document.getElementById('input').value = "";
+        document.getElementById('output').classList.remove('show');
+    }
+
+    function focusText() {
+        const text = document.getElementById('input').value;
+        if(!text) return;
+
+        let processedHtml = "";
+
+        if(currentLang === 'jp') {
+            // 日本語ロジック: 漢字、カタカナ、数値を抽出
+            // 漢字(2文字以上) or カタカナ or 数字 or 記号を残す
+            const regex = /([一-龠]{2,}|[ァ-ヴー]+|[0-9０-９]+|[「」『』【】（）！！”]|[\u4E00-\u9FFF][\u4E00-\u9FFF]+)/g;
+            processedHtml = processByRegex(text, regex);
+        } else {
+            // 英語ロジック: 大文字、数値、6文字以上の単語を抽出
+            const regex = /([A-Z][a-z]*|[0-9]+|[a-zA-Z]{6,}|["'().,?!])/g;
+            processedHtml = processByRegex(text, regex);
+        }
+
+        const output = document.getElementById('output');
+        output.innerHTML = processedHtml;
+        output.classList.add('show');
+        output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function processByRegex(text, regex) {
+        let result = "";
+        let lastIndex = 0;
+        let match;
+
+        while ((match = regex.exec(text)) !== null) {
+            // マッチしなかった部分（肉）を薄く
+            const flesh = text.substring(lastIndex, match.index);
+            if(flesh) {
+                result += `<span class="flesh">${flesh}</span>`;
+            }
+            // マッチした部分（骨）を濃く
+            result += `<span class="bone">${match[0]}</span>`;
+            lastIndex = regex.lastIndex;
+        }
+
+        // 残りの部分（肉）
+        const remaining = text.substring(lastIndex);
+        if(remaining) {
+            result += `<span class="flesh">${remaining}</span>`;
+        }
+
+        return result;
+    }
+
+    function showModal() { document.getElementById('homeModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('homeModal').style.display = 'none'; }
+</script>
+
+</body>
+</html>
