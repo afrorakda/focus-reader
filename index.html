@@ -217,7 +217,7 @@
 <div class="container">
     <header>
         <h1>Focus Reader</h1>
-        <div id="desc" class="description">Highlight the "bones" of the text.</div>
+        <div id="desc" class="description">Boost your reading speed by focusing on the 'bones'.</div>
     </header>
 
     <div class="switcher">
@@ -274,10 +274,10 @@
         const desc = document.getElementById('desc');
         if(lang === 'jp') {
             input.placeholder = "長い文章をここに貼り付けてください...";
-            desc.innerText = "文章の「骨組み」を浮き上がらせます。";
+            desc.innerText = "「助詞」を透過させ、意味の核を浮き上がらせます。";
         } else {
             input.placeholder = "Paste long text here...";
-            desc.innerText = "Highlight the 'bones' of the text.";
+            desc.innerText = "Boost your reading speed by focusing on the 'bones'.";
         }
     }
 
@@ -293,18 +293,34 @@
         let processedHtml = "";
 
         if(currentLang === 'jp') {
-            // JP: 新ロジック実装
-            // 漢字の塊、およびその直後の「ひらがな2文字まで」をBoneにする
-            // カタカナ、数値、カギ括弧等はBone。助詞フィルター。
-            processedHtml = text.replace(/([一-龠]+[ぁ-ん]{0,2}|[ァ-ヴー]+|[0-9０-９]+|[「」『』【】（）！！”])/g, '<span class="bone">$1</span>');
-            // Boneで囲まれていない部分をFleshで包む
-            processedHtml = processedHtml.split(/(<span class="bone">.*?<\/span>)/g).map(part => {
-                if (part.startsWith('<span')) return part;
-                return part ? `<span class="flesh">${part}</span>` : "";
+            // JP: 文ごとに分解して文末3文字を死守＋文中漢字送り仮名を拾う
+            const chunks = text.split(/(？|！|。|\?|!|\n)/g);
+            processedHtml = chunks.map(chunk => {
+                if (/[？！。?!]/.test(chunk) || chunk === "\n") return chunk;
+                if (!chunk.trim()) return chunk;
+
+                // 1. 漢字+送り仮名2文字、カタカナ、数値を強調マークで一時置換
+                let res = chunk.replace(/([一-龠]+[ぁ-ん]{0,2}|[ァ-ヴー]+|[0-9０-９]+|[「」『』【】（）！！”])/g, '___BONE_START___$1___BONE_END___');
+                
+                // 2. 文末3文字を強制Bone化（未強調部分のみを狙う）
+                const tailIndex = Math.max(0, chunk.length - 3);
+                const tail = chunk.substring(tailIndex);
+                // 文末が既にBoneに含まれていない場合のみ末尾に追加
+                if (!res.endsWith('___BONE_END___')) {
+                    res = res.substring(0, res.length - tail.length) + '___BONE_START___' + tail + '___BONE_END___';
+                }
+
+                // 3. マークをHTMLタグに変換し、それ以外をFleshで包む
+                return res.split(/(___BONE_START___.*?___BONE_END___)/g).map(part => {
+                    if (part.startsWith('___BONE_START___')) {
+                        return `<span class="bone">${part.replace('___BONE_START___','').replace('___BONE_END___','')}</span>`;
+                    }
+                    return part ? `<span class="flesh">${part}</span>` : "";
+                }).join('');
             }).join('');
             
         } else {
-            // EN: Bionic Focus (画像23で検証済み、そのまま)
+            // EN: Bionic Focus (単語の最初の3文字をBone化)
             processedHtml = text.split(/(\s+)/).map(part => {
                 if (/\s+/.test(part)) return part;
                 if (part.length <= 3 || /^[0-9.,?!]+$/.test(part)) {
