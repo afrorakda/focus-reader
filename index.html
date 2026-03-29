@@ -13,7 +13,7 @@
             --main: #333;
             --accent: #eee;
             --input-bg: #fafafa;
-            --ghost: #ddd; /* 透過させる文字の色 */
+            --ghost: #bbb; /* 薄すぎない、読めるグレーに修正 */
             --radius: 15px;
         }
 
@@ -300,8 +300,7 @@
         let processedHtml = "";
 
         if(currentLang === 'jp') {
-            // 日本語ロジック: 漢字、カタカナ、数値を抽出
-            // 漢字(2文字以上) or カタカナ or 数字 or 記号を残す
+            // 日本語ロジック: 漢字(2文字以上) or カタカナ or 数字 or 記号を残す
             const regex = /([一-龠]{2,}|[ァ-ヴー]+|[0-9０-９]+|[「」『』【】（）！！”]|[\u4E00-\u9FFF][\u4E00-\u9FFF]+)/g;
             processedHtml = processByRegex(text, regex);
         } else {
