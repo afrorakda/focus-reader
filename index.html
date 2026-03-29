@@ -13,7 +13,7 @@
             --main: #333;
             --accent: #eee;
             --input-bg: #fafafa;
-            --ghost: #888; /* 大胆に濃くして、可読性を確保 */
+            --ghost: #888;
             --radius: 15px;
         }
 
@@ -47,14 +47,12 @@
         h1 { font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -0.5px; }
         .description { font-size: 13px; opacity: 0.7; margin-top: 5px; line-height: 1.4; }
 
-        /* Language Switcher */
         .switcher {
             display: flex;
             background: var(--accent);
             padding: 4px;
             border-radius: var(--radius);
             gap: 4px;
-            margin-bottom: 5px;
         }
 
         .sw-btn {
@@ -74,7 +72,6 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
-        /* Input Area */
         .input-header {
             display: flex;
             justify-content: flex-end;
@@ -120,7 +117,6 @@
         }
         .action-btn:active { transform: scale(0.98); }
 
-        /* Output Area (Bone View) */
         .output-box {
             width: 100%;
             min-height: 100px;
@@ -133,16 +129,14 @@
             white-space: pre-wrap;
             display: none;
             margin-top: 5px;
-            word-break: break-all;
+            word-break: break-word;
         }
 
         .output-box.show { display: block; }
         
-        /* 骨と肉のスタイル */
         .bone { color: var(--main); font-weight: 700; }
-        .flesh { color: var(--ghost); }
+        .flesh { color: var(--ghost); font-weight: 400; }
 
-        /* UI Parts */
         .support-area {
             display: flex;
             flex-direction: column;
@@ -183,7 +177,6 @@
             opacity: 0.5;
         }
 
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -300,44 +293,50 @@
         let processedHtml = "";
 
         if(currentLang === 'jp') {
-            // 日本語ロジック: 漢字(2文字以上) or カタカナ or 数字 or 記号を残す
-            const regex = /([一-龠]{2,}|[ァ-ヴー]+|[0-9０-９]+|[「」『』【】（）！！”]|[\u4E00-\u9FFF][\u4E00-\u9FFF]+)/g;
-            processedHtml = processByRegex(text, regex);
+            // JP: 漢字・カタカナ・数字・記号、および文末(。の前3文字)をBoneにする
+            // 助詞を含む「ひらがな」をFleshにするが、。直前だけは例外
+            const chunks = text.split(/(？|！|。|\?|!|\n)/g);
+            processedHtml = chunks.map(chunk => {
+                if (/[？！。?!]/.test(chunk) || chunk === "\n") return chunk;
+                
+                // 文末付近(3文字)を特定
+                const tailIndex = Math.max(0, chunk.length - 3);
+                const body = chunk.substring(0, tailIndex);
+                const tail = chunk.substring(tailIndex);
+
+                // Body部分は漢字・カタカナ・数字をBoneにする
+                const bodyProcessed = body.replace(/([一-龠]+|[ァ-ヴー]+|[0-9０-９]+)/g, '<span class="bone">$1</span>');
+                // その他のひらがなをFleshで包む
+                const bodyFinal = bodyProcessed.split(/(<span class="bone">.*?<\/span>)/g).map(part => {
+                    if (part.startsWith('<span')) return part;
+                    return part ? `<span class="flesh">${part}</span>` : "";
+                }).join('');
+
+                // Tail部分は常にBone
+                return bodyFinal + `<span class="bone">${tail}</span>`;
+            }).join('');
+            
         } else {
-            // 英語ロジック: 大文字、数値、6文字以上の単語を抽出
-            const regex = /([A-Z][a-z]*|[0-9]+|[a-zA-Z]{6,}|["'().,?!])/g;
-            processedHtml = processByRegex(text, regex);
+            // EN: Bionic Focus - 単語の最初の3文字をBoneにする
+            processedHtml = text.split(/(\s+)/).map(part => {
+                if (/\s+/.test(part)) return part;
+                
+                // 数値や短い単語の処理
+                if (part.length <= 3 || /^[0-9.,?!]+$/.test(part)) {
+                    return `<span class="bone">${part}</span>`;
+                }
+                
+                // 最初の3文字をBone、残りをFlesh
+                const bone = part.substring(0, 3);
+                const flesh = part.substring(3);
+                return `<span class="bone">${bone}</span><span class="flesh">${flesh}</span>`;
+            }).join('');
         }
 
         const output = document.getElementById('output');
         output.innerHTML = processedHtml;
         output.classList.add('show');
         output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
-    function processByRegex(text, regex) {
-        let result = "";
-        let lastIndex = 0;
-        let match;
-
-        while ((match = regex.exec(text)) !== null) {
-            // マッチしなかった部分（肉）を薄く
-            const flesh = text.substring(lastIndex, match.index);
-            if(flesh) {
-                result += `<span class="flesh">${flesh}</span>`;
-            }
-            // マッチした部分（骨）を濃く
-            result += `<span class="bone">${match[0]}</span>`;
-            lastIndex = regex.lastIndex;
-        }
-
-        // 残りの部分（肉）
-        const remaining = text.substring(lastIndex);
-        if(remaining) {
-            result += `<span class="flesh">${remaining}</span>`;
-        }
-
-        return result;
     }
 
     function showModal() { document.getElementById('homeModal').style.display = 'flex'; }
