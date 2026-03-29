@@ -293,40 +293,23 @@
         let processedHtml = "";
 
         if(currentLang === 'jp') {
-            // JP: 漢字・カタカナ・数字・記号、および文末(。の前3文字)をBoneにする
-            // 助詞を含む「ひらがな」をFleshにするが、。直前だけは例外
-            const chunks = text.split(/(？|！|。|\?|!|\n)/g);
-            processedHtml = chunks.map(chunk => {
-                if (/[？！。?!]/.test(chunk) || chunk === "\n") return chunk;
-                
-                // 文末付近(3文字)を特定
-                const tailIndex = Math.max(0, chunk.length - 3);
-                const body = chunk.substring(0, tailIndex);
-                const tail = chunk.substring(tailIndex);
-
-                // Body部分は漢字・カタカナ・数字をBoneにする
-                const bodyProcessed = body.replace(/([一-龠]+|[ァ-ヴー]+|[0-9０-９]+)/g, '<span class="bone">$1</span>');
-                // その他のひらがなをFleshで包む
-                const bodyFinal = bodyProcessed.split(/(<span class="bone">.*?<\/span>)/g).map(part => {
-                    if (part.startsWith('<span')) return part;
-                    return part ? `<span class="flesh">${part}</span>` : "";
-                }).join('');
-
-                // Tail部分は常にBone
-                return bodyFinal + `<span class="bone">${tail}</span>`;
+            // JP: 新ロジック実装
+            // 漢字の塊、およびその直後の「ひらがな2文字まで」をBoneにする
+            // カタカナ、数値、カギ括弧等はBone。助詞フィルター。
+            processedHtml = text.replace(/([一-龠]+[ぁ-ん]{0,2}|[ァ-ヴー]+|[0-9０-９]+|[「」『』【】（）！！”])/g, '<span class="bone">$1</span>');
+            // Boneで囲まれていない部分をFleshで包む
+            processedHtml = processedHtml.split(/(<span class="bone">.*?<\/span>)/g).map(part => {
+                if (part.startsWith('<span')) return part;
+                return part ? `<span class="flesh">${part}</span>` : "";
             }).join('');
             
         } else {
-            // EN: Bionic Focus - 単語の最初の3文字をBoneにする
+            // EN: Bionic Focus (画像23で検証済み、そのまま)
             processedHtml = text.split(/(\s+)/).map(part => {
                 if (/\s+/.test(part)) return part;
-                
-                // 数値や短い単語の処理
                 if (part.length <= 3 || /^[0-9.,?!]+$/.test(part)) {
                     return `<span class="bone">${part}</span>`;
                 }
-                
-                // 最初の3文字をBone、残りをFlesh
                 const bone = part.substring(0, 3);
                 const flesh = part.substring(3);
                 return `<span class="bone">${bone}</span><span class="flesh">${flesh}</span>`;
