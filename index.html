@@ -18,7 +18,7 @@
             --radius: 15px;
         }
 
-        /* 憲法遵守: 角丸15px / iOS Safari対策 / 全域選択禁止（入力以外） */
+        /* 憲法遵守: 角丸15px / iOS Safari対策 / 全域選択禁止 */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
         textarea { -webkit-user-select: text; user-select: text; }
 
@@ -143,7 +143,6 @@
         footer { text-align: center; font-size: 0.75rem; color: #999; line-height: 1.6; font-weight: 700; margin-top: 15px; }
         footer a { color: inherit; text-decoration: underline; }
 
-        /* Modal */
         #homeModal {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
             align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px);
@@ -181,21 +180,21 @@
     <div id="output" class="output-box"></div>
 
     <div class="footer-btns">
-        <a href="https://ko-fi.com/afrorakda" target="_blank" class="kofi-btn">☕️ buy me a coffee</a>
+        <a id="kofi-link" href="https://ko-fi.com/afrorakda" target="_blank" class="kofi-btn">☕️ buy me a coffee</a>
         <button class="home-btn" onclick="showModal()">Add to Home Screen</button>
     </div>
 
     <footer>
-        No login / No tracking / No ads / Browser only<br>
-        <a href="https://afrorakda.com/privacy/">Privacy Policy</a> / afrorakda © 2026
+        <span id="footer-text">No login / No tracking / No ads / Browser only</span><br>
+        <a id="privacy-link" href="https://afrorakda.com/privacy/">Privacy Policy</a> / <span id="copyright">afrorakda © 2026</span>
     </footer>
 </div>
 
 <div id="homeModal" onclick="closeModal()">
     <div class="modal-content" onclick="event.stopPropagation()">
         <span class="modal-close-x" onclick="closeModal()">×</span>
-        <h3 style="margin-bottom: 15px; font-weight: 900;">📱 Install</h3>
-        <p style="font-size: 0.9rem; line-height: 1.6; font-weight: 700;">
+        <h3 id="modal-title" style="margin-bottom: 15px; font-weight: 900;">📱 Install</h3>
+        <p id="modal-body" style="font-size: 0.9rem; line-height: 1.6; font-weight: 700;">
             🍏 <strong>iPhone:</strong><br>Share > Add to Home Screen<br><br>
             🤖 <strong>Android:</strong><br>Menu (⋮) > Add to Home Screen
         </p>
@@ -276,6 +275,23 @@
 
     function showModal() { document.getElementById('homeModal').style.display = 'flex'; }
     function closeModal() { document.getElementById('homeModal').style.display = 'none'; }
+
+    // 鉄壁ロジック: 削除厳禁
+    async function loadFooter() {
+        try {
+            const response = await fetch('footer.json');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.footerText) document.getElementById('footer-text').innerText = data.footerText;
+                if (data.privacyLink) document.getElementById('privacy-link').href = data.privacyLink;
+                if (data.copyright) document.getElementById('copyright').innerText = data.copyright;
+                if (data.kofiText) document.getElementById('kofi-link').innerText = data.kofiText;
+                if (data.modalTitle) document.getElementById('modal-title').innerText = data.modalTitle;
+                if (data.modalBody) document.getElementById('modal-body').innerHTML = data.modalBody;
+            }
+        } catch (e) { console.log("Using static footer."); }
+    }
+    loadFooter();
 </script>
 
 </body>
