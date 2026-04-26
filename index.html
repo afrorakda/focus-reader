@@ -2,57 +2,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="apple-touch-icon" href="image_39.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Focus Reader</title>
+    
     <link rel="icon" href="image_39.png">
-    <title>Focus Reader - Fridge Combo</title>
+    <link rel="apple-touch-icon" href="image_39.png">
+
     <style>
         :root {
-            --bg: #f5f5f5;
-            --container-bg: #fff;
             --main: #333;
+            --bg: #fff;
             --accent: #eee;
             --input-bg: #fafafa;
             --ghost: #888;
             --radius: 15px;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        /* 憲法遵守: 角丸15px / iOS Safari対策 / 全域選択禁止（入力以外） */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
+        textarea { -webkit-user-select: text; user-select: text; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg);
             color: var(--main);
-            margin: 0;
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            justify-content: center;
             min-height: 100vh;
-            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+            padding: env(safe-area-inset-top, 20px) 20px env(safe-area-inset-bottom, 20px) 20px;
         }
 
         .container {
             width: 100%;
-            max-width: 400px;
-            background-color: var(--container-bg);
-            padding: 25px;
-            border-radius: var(--radius);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            max-width: 420px;
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
 
-        header { text-align: center; margin-bottom: 5px; }
-        h1 { font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -0.5px; }
-        .description { font-size: 13px; opacity: 0.7; margin-top: 5px; line-height: 1.4; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: -1.5px; }
+
+        .hub-link {
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--main);
+            background: var(--accent);
+            padding: 8px 14px;
+            border-radius: var(--radius);
+        }
+
+        .subtitle { font-size: 0.9rem; color: #666; font-weight: 700; text-align: left; }
 
         .switcher {
             display: flex;
-            background: var(--accent);
-            padding: 4px;
+            background: var(--input-bg);
+            padding: 5px;
             border-radius: var(--radius);
-            gap: 4px;
+            gap: 5px;
+            border: 2px solid var(--accent);
         }
 
         .sw-btn {
@@ -60,156 +75,84 @@
             border: none;
             background: none;
             padding: 10px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            border-radius: 10px;
             cursor: pointer;
-            color: var(--main);
+            color: #888;
         }
 
-        .sw-btn.active {
-            background: var(--container-bg);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        .sw-btn.active { background: #fff; color: var(--main); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+        .input-card {
+            background: var(--input-bg);
+            padding: 18px;
+            border-radius: var(--radius);
+            border: 2px solid var(--accent);
+            position: relative;
         }
 
-        .input-header {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: -10px;
-            z-index: 1;
-        }
-
-        .clr-btn {
-            font-size: 12px;
-            color: #aaa;
-            cursor: pointer;
-            font-weight: bold;
-            padding: 5px 10px;
-        }
+        .input-wrapper { position: relative; }
 
         textarea {
-            width: 100%;
-            height: 140px;
-            padding: 15px;
-            border: 2px solid var(--accent);
-            border-radius: var(--radius);
-            background-color: var(--input-bg);
-            font-size: 16px;
-            color: var(--main);
-            resize: none;
-            outline: none;
-            -webkit-appearance: none;
-            -webkit-text-fill-color: var(--main);
-            opacity: 1 !important;
+            width: 100%; height: 140px; padding: 15px; padding-right: 40px;
+            border: 2px solid var(--accent); border-radius: var(--radius);
+            background: #fff; font-size: 1rem; font-weight: 600;
+            color: var(--main) !important; outline: none; resize: none;
+            -webkit-appearance: none; -webkit-text-fill-color: var(--main) !important; opacity: 1 !important;
+        }
+        textarea::placeholder { color: #bbb !important; -webkit-text-fill-color: #bbb !important; opacity: 1 !important; }
+
+        .clr-btn {
+            position: absolute; top: 10px; right: 10px; width: 28px; height: 28px;
+            background: #ccc; color: #fff; border-radius: 50%;
+            display: none; align-items: center; justify-content: center;
+            cursor: pointer; border: none; font-size: 16px; font-weight: bold; z-index: 5;
         }
 
         .action-btn {
-            width: 100%;
-            padding: 18px;
-            background-color: var(--main);
-            color: var(--container-bg);
-            border: none;
-            border-radius: var(--radius);
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.1s;
+            width: 100%; padding: 18px; background: var(--main); color: #fff;
+            border: none; border-radius: var(--radius); font-size: 1rem;
+            font-weight: 800; cursor: pointer; -webkit-text-fill-color: #fff;
         }
         .action-btn:active { transform: scale(0.98); }
 
         .output-box {
-            width: 100%;
-            min-height: 100px;
-            padding: 15px;
-            background: var(--input-bg);
-            border: 1px dashed var(--accent);
-            border-radius: var(--radius);
-            font-size: 16px;
-            line-height: 1.7;
-            white-space: pre-wrap;
-            display: none;
-            margin-top: 5px;
+            width: 100%; min-height: 100px; padding: 18px; background: var(--input-bg);
+            border: 2px solid var(--accent); border-radius: var(--radius);
+            font-size: 1.05rem; line-height: 1.75; white-space: pre-wrap;
+            display: none; font-weight: 600; color: var(--main);
             word-break: break-word;
         }
-
         .output-box.show { display: block; }
         
-        .bone { color: var(--main); font-weight: 700; }
+        .bone { color: var(--main); font-weight: 800; }
         .flesh { color: var(--ghost); font-weight: 400; }
 
-        .support-area {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            margin-top: 25px;
-            border-top: 1px solid var(--accent);
-            padding-top: 20px;
-        }
-
+        .footer-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
         .kofi-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--main);
-            color: #fff;
-            text-decoration: none;
-            padding: 12px 22px;
-            border-radius: var(--radius);
-            font-weight: bold;
-            font-size: 14px;
+            background: var(--main); color: #fff; text-decoration: none;
+            padding: 16px; border-radius: var(--radius); text-align: center;
+            font-weight: 900; font-size: 0.9rem; -webkit-text-fill-color: #fff;
+        }
+        .home-btn {
+            background: var(--accent); color: var(--main); border: none;
+            padding: 12px; border-radius: var(--radius); font-weight: 800; font-size: 0.8rem; cursor: pointer;
         }
 
-        .add-home-link {
-            font-size: 12px;
-            color: var(--main);
-            text-decoration: underline;
-            cursor: pointer;
-            opacity: 0.8;
-        }
+        footer { text-align: center; font-size: 0.75rem; color: #999; line-height: 1.6; font-weight: 700; margin-top: 15px; }
+        footer a { color: inherit; text-decoration: underline; }
 
-        footer {
-            margin-top: auto;
-            padding: 40px 0 20px;
-            text-align: center;
-            font-size: 11px;
-            line-height: 1.8;
-            opacity: 0.5;
+        /* Modal */
+        #homeModal {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+            align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px);
         }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            justify-content: center; align-items: center;
-            z-index: 1000;
-        }
-
         .modal-content {
-            background: var(--container-bg);
-            padding: 30px;
-            border-radius: var(--radius);
-            max-width: 340px;
-            width: 90%;
-            position: relative;
+            background: #fff; width: 90%; max-width: 340px; padding: 35px;
+            border-radius: var(--radius); text-align: left; position: relative;
         }
-
-        .modal-close-x {
-            position: absolute;
-            top: 15px; right: 15px;
-            color: #ccc; font-size: 22px; cursor: pointer;
-            padding: 5px;
-        }
-
-        .modal-title {
-            display: flex; align-items: center; gap: 10px;
-            font-size: 20px; font-weight: bold; margin-bottom: 25px;
-        }
-
-        .modal-item { margin-bottom: 18px; font-size: 14px; line-height: 1.6; color: #555; }
-        .modal-item b { display: block; margin-bottom: 3px; color: var(--main); }
-
+        .modal-close-x { position: absolute; top: 15px; right: 20px; font-size: 24px; color: #ccc; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -217,49 +160,45 @@
 <div class="container">
     <header>
         <h1>Focus Reader</h1>
-        <div id="desc" class="description">Boost your reading speed by focusing on the 'bones'.</div>
+        <a href="https://afrorakda.github.io/" class="hub-link">🏠 Hub</a>
     </header>
+    <p id="desc" class="subtitle">Boost your reading speed by focusing on the 'bones'.</p>
 
     <div class="switcher">
         <button id="btn-en" class="sw-btn active" onclick="setLang('en')">English</button>
         <button id="btn-jp" class="sw-btn" onclick="setLang('jp')">日本語</button>
     </div>
 
-    <div class="input-header">
-        <div class="clr-btn" onclick="clearInput()">CLR</div>
+    <div class="input-card">
+        <div class="input-wrapper">
+            <textarea id="input" placeholder="Paste long text here..." oninput="toggleClr()"></textarea>
+            <button class="clr-btn" id="clrBtn" onclick="clearInput()">×</button>
+        </div>
     </div>
-    <textarea id="input" placeholder="Paste long text here..."></textarea>
     
     <button class="action-btn" onclick="focusText()">FOCUS</button>
 
     <div id="output" class="output-box"></div>
 
-    <div class="support-area">
-        <a href="https://ko-fi.com/afrorakda" class="kofi-btn">☕️ buy me a coffee</a>
-        <div class="add-home-link" onclick="showModal()">Add to Home Screen</div>
+    <div class="footer-btns">
+        <a href="https://ko-fi.com/afrorakda" target="_blank" class="kofi-btn">☕️ buy me a coffee</a>
+        <button class="home-btn" onclick="showModal()">Add to Home Screen</button>
     </div>
+
+    <footer>
+        No login / No tracking / No ads / Browser only<br>
+        <a href="https://afrorakda.com/privacy/">Privacy Policy</a> / afrorakda © 2026
+    </footer>
 </div>
 
-<footer>
-    No login / No tracking / No ads / Browser only<br>
-    Privacy Policy / afrorakda © 2026
-</footer>
-
-<div id="homeModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-close-x" onclick="closeModal()">×</div>
-        <div class="modal-title"><span>📱</span> Install</div>
-        <div class="modal-item">
-            Add this tool to your home screen.
-        </div>
-        <div class="modal-item">
-            <b>🍏 iPhone (Safari):</b>
-            Tap Share, then Add to Home Screen.
-        </div>
-        <div class="modal-item">
-            <b>🤖 Android (Chrome):</b>
-            Tap Menu (⋮), then Add to Home Screen.
-        </div>
+<div id="homeModal" onclick="closeModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <span class="modal-close-x" onclick="closeModal()">×</span>
+        <h3 style="margin-bottom: 15px; font-weight: 900;">📱 Install</h3>
+        <p style="font-size: 0.9rem; line-height: 1.6; font-weight: 700;">
+            🍏 <strong>iPhone:</strong><br>Share > Add to Home Screen<br><br>
+            🤖 <strong>Android:</strong><br>Menu (⋮) > Add to Home Screen
+        </p>
     </div>
 </div>
 
@@ -281,9 +220,16 @@
         }
     }
 
+    function toggleClr() {
+        const val = document.getElementById('input').value;
+        document.getElementById('clrBtn').style.display = val.length > 0 ? 'flex' : 'none';
+    }
+
     function clearInput() {
         document.getElementById('input').value = "";
         document.getElementById('output').classList.remove('show');
+        toggleClr();
+        document.getElementById('input').focus();
     }
 
     function focusText() {
@@ -293,24 +239,16 @@
         let processedHtml = "";
 
         if(currentLang === 'jp') {
-            // JP: 文ごとに分解して文末3文字を死守＋文中漢字送り仮名を拾う
             const chunks = text.split(/(？|！|。|\?|!|\n)/g);
             processedHtml = chunks.map(chunk => {
                 if (/[？！。?!]/.test(chunk) || chunk === "\n") return chunk;
                 if (!chunk.trim()) return chunk;
-
-                // 1. 漢字+送り仮名2文字、カタカナ、数値を強調マークで一時置換
                 let res = chunk.replace(/([一-龠]+[ぁ-ん]{0,2}|[ァ-ヴー]+|[0-9０-９]+|[「」『』【】（）！！”])/g, '___BONE_START___$1___BONE_END___');
-                
-                // 2. 文末3文字を強制Bone化（未強調部分のみを狙う）
                 const tailIndex = Math.max(0, chunk.length - 3);
                 const tail = chunk.substring(tailIndex);
-                // 文末が既にBoneに含まれていない場合のみ末尾に追加
                 if (!res.endsWith('___BONE_END___')) {
                     res = res.substring(0, res.length - tail.length) + '___BONE_START___' + tail + '___BONE_END___';
                 }
-
-                // 3. マークをHTMLタグに変換し、それ以外をFleshで包む
                 return res.split(/(___BONE_START___.*?___BONE_END___)/g).map(part => {
                     if (part.startsWith('___BONE_START___')) {
                         return `<span class="bone">${part.replace('___BONE_START___','').replace('___BONE_END___','')}</span>`;
@@ -318,9 +256,7 @@
                     return part ? `<span class="flesh">${part}</span>` : "";
                 }).join('');
             }).join('');
-            
         } else {
-            // EN: Bionic Focus (単語の最初の3文字をBone化)
             processedHtml = text.split(/(\s+)/).map(part => {
                 if (/\s+/.test(part)) return part;
                 if (part.length <= 3 || /^[0-9.,?!]+$/.test(part)) {
@@ -335,7 +271,7 @@
         const output = document.getElementById('output');
         output.innerHTML = processedHtml;
         output.classList.add('show');
-        output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        window.scrollTo({ top: output.offsetTop - 20, behavior: 'smooth' });
     }
 
     function showModal() { document.getElementById('homeModal').style.display = 'flex'; }
