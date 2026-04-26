@@ -14,7 +14,7 @@
             --bg: #fff;
             --accent: #eee;
             --input-bg: #fafafa;
-            --ghost: #bbb;
+            --focus: #ff3b30; /* Scientific ORP point */
             --radius: 15px;
         }
 
@@ -44,17 +44,6 @@
 
         .subtitle { font-size: 0.85rem; color: #666; font-weight: 700; }
 
-        .switcher {
-            display: flex; background: var(--input-bg); padding: 5px;
-            border-radius: var(--radius); gap: 5px; border: 2px solid var(--accent);
-        }
-
-        .sw-btn {
-            flex: 1; border: none; background: none; padding: 10px;
-            font-size: 0.85rem; font-weight: 800; border-radius: 10px; cursor: pointer; color: #888;
-        }
-        .sw-btn.active { background: #fff; color: var(--main); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-
         .input-card { background: var(--input-bg); padding: 18px; border-radius: var(--radius); border: 2px solid var(--accent); position: relative; }
 
         textarea {
@@ -78,19 +67,17 @@
             border: none; border-radius: var(--radius); font-size: 1rem;
             font-weight: 800; cursor: pointer; -webkit-text-fill-color: #fff;
         }
+        .action-btn:active { transform: scale(0.98); }
 
         .output-box {
             width: 100%; min-height: 100px; padding: 20px; background: var(--input-bg);
             border: 2px solid var(--accent); border-radius: var(--radius);
-            font-size: 1.1rem; line-height: 1.8; white-space: pre-wrap;
+            font-size: 1.15rem; line-height: 1.8; white-space: pre-wrap;
             display: none; font-weight: 600; color: var(--main); word-break: break-word;
         }
         .output-box.show { display: block; }
         
-        /* 速読用スタイル */
-        .orp { color: #ff3b30; font-weight: 900; } /* 英語用フォーカス点 */
-        .bone { color: var(--main); font-weight: 800; }
-        .flesh { color: var(--ghost); font-weight: 400; }
+        .orp { color: var(--focus); font-weight: 900; }
 
         .footer-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
         .kofi-btn {
@@ -124,19 +111,14 @@
         <h1>Focus Reader</h1>
         <a href="https://afrorakda.github.io/" class="hub-link">🏠 Hub</a>
     </header>
-    <p id="desc" class="subtitle">Scientifically optimized reading focus.</p>
-
-    <div class="switcher">
-        <button id="btn-en" class="sw-btn active" onclick="setLang('en')">English</button>
-        <button id="btn-jp" class="sw-btn" onclick="setLang('jp')">日本語</button>
-    </div>
+    <p class="subtitle">Scientifically optimized English reading focus.</p>
 
     <div class="input-card">
-        <textarea id="input" placeholder="Paste text..." oninput="toggleClr()"></textarea>
+        <textarea id="input" placeholder="Paste English text here..." oninput="toggleClr()"></textarea>
         <button class="clr-btn" id="clrBtn" onclick="clearInput()">×</button>
     </div>
     
-    <button class="action-btn" onclick="processFocus()">FOCUS</button>
+    <button class="action-btn" onclick="focusEnglish()">FOCUS</button>
 
     <div id="output" class="output-box"></div>
 
@@ -163,23 +145,6 @@
 </div>
 
 <script>
-    let currentLang = 'en';
-
-    function setLang(lang) {
-        currentLang = lang;
-        document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-        document.getElementById('btn-jp').classList.toggle('active', lang === 'jp');
-        const input = document.getElementById('input');
-        const desc = document.getElementById('desc');
-        if(lang === 'jp') {
-            input.placeholder = "長い文章をここに貼り付けてください...";
-            desc.innerText = "視線移動を最小化し、脳の認識速度を最大化します。";
-        } else {
-            input.placeholder = "Paste text...";
-            desc.innerText = "Scientifically optimized reading focus.";
-        }
-    }
-
     function toggleClr() {
         const val = document.getElementById('input').value;
         document.getElementById('clrBtn').style.display = val.length > 0 ? 'flex' : 'none';
@@ -192,34 +157,23 @@
         document.getElementById('input').focus();
     }
 
-    function processFocus() {
+    function focusEnglish() {
         const text = document.getElementById('input').value.trim();
         if(!text) return;
 
-        let html = "";
-        if(currentLang === 'en') {
-            // Spritz / RSVP アルゴリズムを模した ORP 強調
-            html = text.split(/\s+/).map(word => {
-                if(word.length === 1) return `<span class="orp">${word}</span>`;
-                const orpIndex = Math.floor(word.length * 0.3);
-                const pre = word.substring(0, orpIndex);
-                const focus = word.substring(orpIndex, orpIndex + 1);
-                const post = word.substring(orpIndex + 1);
-                return `<span class="bone">${pre}<span class="orp">${focus}</span>${post}</span>`;
-            }).join(' ');
-        } else {
-            // 日本語: 文節境界予測 (文字種の切り替わり + 助詞パターン)
-            // 外部の形態素解析に近い挙動を正規表現とループで擬似再現
-            const tokens = text.match(/[一-龠々]+|[ァ-ヴー]+|[a-zA-Z0-9]+|[ぁ-ん]+|[、。！？]/g) || [];
-            html = tokens.map(t => {
-                // 漢字・カタカナ・英数字、または短いひらがな（単語の可能性が高い）を強調
-                if (/[一-龠々]|[ァ-ヴー]|[a-zA-Z0-9]/.test(t) || (/[ぁ-ん]/.test(t) && t.length <= 2)) {
-                    return `<span class="bone">${t}</span>`;
-                }
-                // 長いひらがなは「助詞を含む付随部分」として透過
-                return `<span class="flesh">${t}</span>`;
-            }).join('');
-        }
+        // ORP Algorithm: Centers focus on 30-40% of the word length
+        const html = text.split(/(\s+)/).map(part => {
+            if(/\s+/.test(part)) return part;
+            const word = part;
+            if(word.length <= 1) return `<span class="orp">${word}</span>`;
+            
+            const orpIndex = Math.floor(word.length * 0.3);
+            const pre = word.substring(0, orpIndex);
+            const focus = word.substring(orpIndex, orpIndex + 1);
+            const post = word.substring(orpIndex + 1);
+            
+            return `${pre}<span class="orp">${focus}</span>${post}`;
+        }).join('');
 
         const out = document.getElementById('output');
         out.innerHTML = html;
@@ -230,6 +184,7 @@
     function showModal() { document.getElementById('homeModal').style.display = 'flex'; }
     function closeModal() { document.getElementById('homeModal').style.display = 'none'; }
 
+    // 鉄壁ロジック: 削除厳禁
     async function loadFooter() {
         try {
             const response = await fetch('footer.json');
@@ -240,7 +195,7 @@
                 if (data.copyright) document.getElementById('copyright').innerText = data.copyright;
                 if (data.kofiText) document.getElementById('kofi-link').innerText = data.kofiText;
             }
-        } catch (e) { console.log("Static load."); }
+        } catch (e) { console.log("Static footer active."); }
     }
     loadFooter();
 </script>
