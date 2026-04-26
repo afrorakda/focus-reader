@@ -14,7 +14,7 @@
             --bg: #fff;
             --accent: #eee;
             --input-bg: #fafafa;
-            --ghost: #888;
+            --ghost: #aaa; /* Flesh(肉)の色 */
             --radius: 15px;
         }
 
@@ -120,13 +120,13 @@
         .output-box {
             width: 100%; min-height: 100px; padding: 18px; background: var(--input-bg);
             border: 2px solid var(--accent); border-radius: var(--radius);
-            font-size: 1.05rem; line-height: 1.75; white-space: pre-wrap;
+            font-size: 1.05rem; line-height: 1.8; white-space: pre-wrap;
             display: none; font-weight: 600; color: var(--main);
             word-break: break-word;
         }
         .output-box.show { display: block; }
         
-        .bone { color: var(--main); font-weight: 800; }
+        .bone { color: var(--main); font-weight: 800; opacity: 1; }
         .flesh { color: var(--ghost); font-weight: 400; }
 
         .footer-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
@@ -170,7 +170,7 @@
 
     <div class="input-card">
         <div class="input-wrapper">
-            <textarea id="input" placeholder="Paste long text here..." oninput="toggleClr()"></textarea>
+            <textarea id="input" placeholder="Paste text here..." oninput="toggleClr()"></textarea>
             <button class="clr-btn" id="clrBtn" onclick="clearInput()">×</button>
         </div>
     </div>
@@ -214,7 +214,7 @@
             input.placeholder = "長い文章をここに貼り付けてください...";
             desc.innerText = "「助詞」を透過させ、意味の核を浮き上がらせます。";
         } else {
-            input.placeholder = "Paste long text here...";
+            input.placeholder = "Paste text here...";
             desc.innerText = "Boost your reading speed by focusing on the 'bones'.";
         }
     }
@@ -238,31 +238,35 @@
         let processedHtml = "";
 
         if(currentLang === 'jp') {
-            const chunks = text.split(/(？|！|。|\?|!|\n)/g);
-            processedHtml = chunks.map(chunk => {
-                if (/[？！。?!]/.test(chunk) || chunk === "\n") return chunk;
-                if (!chunk.trim()) return chunk;
-                let res = chunk.replace(/([一-龠]+[ぁ-ん]{0,2}|[ァ-ヴー]+|[0-9０-９]+|[「」『』【】（）！！”])/g, '___BONE_START___$1___BONE_END___');
-                const tailIndex = Math.max(0, chunk.length - 3);
-                const tail = chunk.substring(tailIndex);
-                if (!res.endsWith('___BONE_END___')) {
-                    res = res.substring(0, res.length - tail.length) + '___BONE_START___' + tail + '___BONE_END___';
+            // 日本語: 漢字・カタカナ・英数字を強調。ひらがな（助詞中心）を透過。
+            // シンプルかつ堅牢な置換ロジックへ刷新。
+            processedHtml = text.replace(/([一-龠々]+|[ァ-ヴー]+|[a-zA-Z0-9０-９]+|[「」『』【】（）！？。、])/g, '<span class="bone">$1</span>');
+            
+            // 強調されなかった部分（主にひらがな）を flesh で包む
+            let tempDiv = document.createElement('div');
+            tempDiv.innerHTML = processedHtml;
+            
+            let finalNodes = [];
+            tempDiv.childNodes.forEach(node => {
+                if(node.nodeType === 3) { // テキストノード
+                    const span = document.createElement('span');
+                    span.className = 'flesh';
+                    span.textContent = node.textContent;
+                    finalNodes.push(span.outerHTML);
+                } else {
+                    finalNodes.push(node.outerHTML);
                 }
-                return res.split(/(___BONE_START___.*?___BONE_END___)/g).map(part => {
-                    if (part.startsWith('___BONE_START___')) {
-                        return `<span class="bone">${part.replace('___BONE_START___','').replace('___BONE_END___','')}</span>`;
-                    }
-                    return part ? `<span class="flesh">${part}</span>` : "";
-                }).join('');
-            }).join('');
+            });
+            processedHtml = finalNodes.join('');
+
         } else {
+            // 英語: Bionic Focus (単語の頭を強調)
             processedHtml = text.split(/(\s+)/).map(part => {
                 if (/\s+/.test(part)) return part;
-                if (part.length <= 3 || /^[0-9.,?!]+$/.test(part)) {
-                    return `<span class="bone">${part}</span>`;
-                }
-                const bone = part.substring(0, 3);
-                const flesh = part.substring(3);
+                if (part.length <= 3) return `<span class="bone">${part}</span>`;
+                const mid = Math.ceil(part.length / 2);
+                const bone = part.substring(0, mid);
+                const flesh = part.substring(mid);
                 return `<span class="bone">${bone}</span><span class="flesh">${flesh}</span>`;
             }).join('');
         }
@@ -276,7 +280,6 @@
     function showModal() { document.getElementById('homeModal').style.display = 'flex'; }
     function closeModal() { document.getElementById('homeModal').style.display = 'none'; }
 
-    // 鉄壁ロジック: 削除厳禁
     async function loadFooter() {
         try {
             const response = await fetch('footer.json');
@@ -286,8 +289,6 @@
                 if (data.privacyLink) document.getElementById('privacy-link').href = data.privacyLink;
                 if (data.copyright) document.getElementById('copyright').innerText = data.copyright;
                 if (data.kofiText) document.getElementById('kofi-link').innerText = data.kofiText;
-                if (data.modalTitle) document.getElementById('modal-title').innerText = data.modalTitle;
-                if (data.modalBody) document.getElementById('modal-body').innerHTML = data.modalBody;
             }
         } catch (e) { console.log("Using static footer."); }
     }
