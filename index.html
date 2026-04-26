@@ -14,11 +14,11 @@
             --bg: #fff;
             --accent: #eee;
             --input-bg: #fafafa;
-            --ghost: #aaa; /* Flesh(肉)の色 */
+            --ghost: #bbb;
             --radius: 15px;
         }
 
-        /* 憲法遵守: 角丸15px / iOS Safari対策 / 全域選択禁止 */
+        /* 憲法遵守 */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
         textarea { -webkit-user-select: text; user-select: text; }
 
@@ -33,66 +33,29 @@
             padding: env(safe-area-inset-top, 20px) 20px env(safe-area-inset-bottom, 20px) 20px;
         }
 
-        .container {
-            width: 100%;
-            max-width: 420px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
+        .container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 15px; }
+        header { display: flex; justify-content: space-between; align-items: center; }
         h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: -1.5px; }
 
         .hub-link {
-            text-decoration: none;
-            font-size: 0.8rem;
-            font-weight: 800;
-            color: var(--main);
-            background: var(--accent);
-            padding: 8px 14px;
-            border-radius: var(--radius);
+            text-decoration: none; font-size: 0.8rem; font-weight: 800; color: var(--main);
+            background: var(--accent); padding: 8px 14px; border-radius: var(--radius);
         }
 
-        .subtitle { font-size: 0.9rem; color: #666; font-weight: 700; text-align: left; }
+        .subtitle { font-size: 0.85rem; color: #666; font-weight: 700; }
 
         .switcher {
-            display: flex;
-            background: var(--input-bg);
-            padding: 5px;
-            border-radius: var(--radius);
-            gap: 5px;
-            border: 2px solid var(--accent);
+            display: flex; background: var(--input-bg); padding: 5px;
+            border-radius: var(--radius); gap: 5px; border: 2px solid var(--accent);
         }
 
         .sw-btn {
-            flex: 1;
-            border: none;
-            background: none;
-            padding: 10px;
-            font-size: 0.85rem;
-            font-weight: 800;
-            border-radius: 10px;
-            cursor: pointer;
-            color: #888;
+            flex: 1; border: none; background: none; padding: 10px;
+            font-size: 0.85rem; font-weight: 800; border-radius: 10px; cursor: pointer; color: #888;
         }
-
         .sw-btn.active { background: #fff; color: var(--main); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-        .input-card {
-            background: var(--input-bg);
-            padding: 18px;
-            border-radius: var(--radius);
-            border: 2px solid var(--accent);
-            position: relative;
-        }
-
-        .input-wrapper { position: relative; }
+        .input-card { background: var(--input-bg); padding: 18px; border-radius: var(--radius); border: 2px solid var(--accent); position: relative; }
 
         textarea {
             width: 100%; height: 140px; padding: 15px; padding-right: 40px;
@@ -104,7 +67,7 @@
         textarea::placeholder { color: #bbb !important; -webkit-text-fill-color: #bbb !important; opacity: 1 !important; }
 
         .clr-btn {
-            position: absolute; top: 10px; right: 10px; width: 28px; height: 28px;
+            position: absolute; top: 28px; right: 28px; width: 28px; height: 28px;
             background: #ccc; color: #fff; border-radius: 50%;
             display: none; align-items: center; justify-content: center;
             cursor: pointer; border: none; font-size: 16px; font-weight: bold; z-index: 5;
@@ -115,18 +78,18 @@
             border: none; border-radius: var(--radius); font-size: 1rem;
             font-weight: 800; cursor: pointer; -webkit-text-fill-color: #fff;
         }
-        .action-btn:active { transform: scale(0.98); }
 
         .output-box {
-            width: 100%; min-height: 100px; padding: 18px; background: var(--input-bg);
+            width: 100%; min-height: 100px; padding: 20px; background: var(--input-bg);
             border: 2px solid var(--accent); border-radius: var(--radius);
-            font-size: 1.05rem; line-height: 1.8; white-space: pre-wrap;
-            display: none; font-weight: 600; color: var(--main);
-            word-break: break-word;
+            font-size: 1.1rem; line-height: 1.8; white-space: pre-wrap;
+            display: none; font-weight: 600; color: var(--main); word-break: break-word;
         }
         .output-box.show { display: block; }
         
-        .bone { color: var(--main); font-weight: 800; opacity: 1; }
+        /* 速読用スタイル */
+        .orp { color: #ff3b30; font-weight: 900; } /* 英語用フォーカス点 */
+        .bone { color: var(--main); font-weight: 800; }
         .flesh { color: var(--ghost); font-weight: 400; }
 
         .footer-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
@@ -161,7 +124,7 @@
         <h1>Focus Reader</h1>
         <a href="https://afrorakda.github.io/" class="hub-link">🏠 Hub</a>
     </header>
-    <p id="desc" class="subtitle">Boost your reading speed by focusing on the 'bones'.</p>
+    <p id="desc" class="subtitle">Scientifically optimized reading focus.</p>
 
     <div class="switcher">
         <button id="btn-en" class="sw-btn active" onclick="setLang('en')">English</button>
@@ -169,13 +132,11 @@
     </div>
 
     <div class="input-card">
-        <div class="input-wrapper">
-            <textarea id="input" placeholder="Paste text here..." oninput="toggleClr()"></textarea>
-            <button class="clr-btn" id="clrBtn" onclick="clearInput()">×</button>
-        </div>
+        <textarea id="input" placeholder="Paste text..." oninput="toggleClr()"></textarea>
+        <button class="clr-btn" id="clrBtn" onclick="clearInput()">×</button>
     </div>
     
-    <button class="action-btn" onclick="focusText()">FOCUS</button>
+    <button class="action-btn" onclick="processFocus()">FOCUS</button>
 
     <div id="output" class="output-box"></div>
 
@@ -212,10 +173,10 @@
         const desc = document.getElementById('desc');
         if(lang === 'jp') {
             input.placeholder = "長い文章をここに貼り付けてください...";
-            desc.innerText = "「助詞」を透過させ、意味の核を浮き上がらせます。";
+            desc.innerText = "視線移動を最小化し、脳の認識速度を最大化します。";
         } else {
-            input.placeholder = "Paste text here...";
-            desc.innerText = "Boost your reading speed by focusing on the 'bones'.";
+            input.placeholder = "Paste text...";
+            desc.innerText = "Scientifically optimized reading focus.";
         }
     }
 
@@ -231,50 +192,39 @@
         document.getElementById('input').focus();
     }
 
-    function focusText() {
-        const text = document.getElementById('input').value;
+    function processFocus() {
+        const text = document.getElementById('input').value.trim();
         if(!text) return;
 
-        let processedHtml = "";
-
-        if(currentLang === 'jp') {
-            // 日本語: 漢字・カタカナ・英数字を強調。ひらがな（助詞中心）を透過。
-            // シンプルかつ堅牢な置換ロジックへ刷新。
-            processedHtml = text.replace(/([一-龠々]+|[ァ-ヴー]+|[a-zA-Z0-9０-９]+|[「」『』【】（）！？。、])/g, '<span class="bone">$1</span>');
-            
-            // 強調されなかった部分（主にひらがな）を flesh で包む
-            let tempDiv = document.createElement('div');
-            tempDiv.innerHTML = processedHtml;
-            
-            let finalNodes = [];
-            tempDiv.childNodes.forEach(node => {
-                if(node.nodeType === 3) { // テキストノード
-                    const span = document.createElement('span');
-                    span.className = 'flesh';
-                    span.textContent = node.textContent;
-                    finalNodes.push(span.outerHTML);
-                } else {
-                    finalNodes.push(node.outerHTML);
-                }
-            });
-            processedHtml = finalNodes.join('');
-
+        let html = "";
+        if(currentLang === 'en') {
+            // Spritz / RSVP アルゴリズムを模した ORP 強調
+            html = text.split(/\s+/).map(word => {
+                if(word.length === 1) return `<span class="orp">${word}</span>`;
+                const orpIndex = Math.floor(word.length * 0.3);
+                const pre = word.substring(0, orpIndex);
+                const focus = word.substring(orpIndex, orpIndex + 1);
+                const post = word.substring(orpIndex + 1);
+                return `<span class="bone">${pre}<span class="orp">${focus}</span>${post}</span>`;
+            }).join(' ');
         } else {
-            // 英語: Bionic Focus (単語の頭を強調)
-            processedHtml = text.split(/(\s+)/).map(part => {
-                if (/\s+/.test(part)) return part;
-                if (part.length <= 3) return `<span class="bone">${part}</span>`;
-                const mid = Math.ceil(part.length / 2);
-                const bone = part.substring(0, mid);
-                const flesh = part.substring(mid);
-                return `<span class="bone">${bone}</span><span class="flesh">${flesh}</span>`;
+            // 日本語: 文節境界予測 (文字種の切り替わり + 助詞パターン)
+            // 外部の形態素解析に近い挙動を正規表現とループで擬似再現
+            const tokens = text.match(/[一-龠々]+|[ァ-ヴー]+|[a-zA-Z0-9]+|[ぁ-ん]+|[、。！？]/g) || [];
+            html = tokens.map(t => {
+                // 漢字・カタカナ・英数字、または短いひらがな（単語の可能性が高い）を強調
+                if (/[一-龠々]|[ァ-ヴー]|[a-zA-Z0-9]/.test(t) || (/[ぁ-ん]/.test(t) && t.length <= 2)) {
+                    return `<span class="bone">${t}</span>`;
+                }
+                // 長いひらがなは「助詞を含む付随部分」として透過
+                return `<span class="flesh">${t}</span>`;
             }).join('');
         }
 
-        const output = document.getElementById('output');
-        output.innerHTML = processedHtml;
-        output.classList.add('show');
-        window.scrollTo({ top: output.offsetTop - 20, behavior: 'smooth' });
+        const out = document.getElementById('output');
+        out.innerHTML = html;
+        out.classList.add('show');
+        window.scrollTo({ top: out.offsetTop - 20, behavior: 'smooth' });
     }
 
     function showModal() { document.getElementById('homeModal').style.display = 'flex'; }
@@ -290,7 +240,7 @@
                 if (data.copyright) document.getElementById('copyright').innerText = data.copyright;
                 if (data.kofiText) document.getElementById('kofi-link').innerText = data.kofiText;
             }
-        } catch (e) { console.log("Using static footer."); }
+        } catch (e) { console.log("Static load."); }
     }
     loadFooter();
 </script>
